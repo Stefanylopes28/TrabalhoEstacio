@@ -1,110 +1,121 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
-    <title>Controle de Estoque - Oficina Autopeças</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap"
+    rel="stylesheet"
+  />
+  <title>Controle de Estoque - Oficina Autopeças</title>
 </head>
 <body>
-    <header>
-        <h1>Controle de Estoque - Oficina Autopeças</h1>
-        <nav>
-            <ul>
-                <li><a href="#cadastro-produtos">Cadastrar Produtos</a></li>
-                <li><a href="#atualizacao-estoque">Atualizar Estoque</a></li>
-                <li><a href="#busca-produtos">Buscar Produtos</a></li>
-                <li><a href="#relatorios">Relatórios</a></li>
-            </ul>
-        </nav>
-    </header>
+  <header>
+    <h1>Controle de Estoque - Oficina Autopeças</h1>
+    <nav>
+      <ul>
+        <li><a href="#cadastro-produtos">Cadastrar Produtos</a></li>
+        <li><a href="#atualizacao-estoque">Atualizar Estoque</a></li>
+        <li><a href="#busca-produtos">Buscar Produtos</a></li>
+        <li><a href="#relatorios">Relatórios</a></li>
+      </ul>
+    </nav>
+  </header>
 
-    <main>
-        
-        <section id="cadastro-produtos">
-            <h2>Cadastro de Produtos</h2>
-            <form action="/cadastrar-produto" method="POST">
-                <label for="nome-produto">Nome do Produto:</label>
-                <input type="text" id="nome-produto" name="nome-produto" required>
+  <main>
+    <section id="cadastro-produtos">
+      <h2>Cadastro de Produtos:</h2>
+      <form id="cadastro-produtos">
+        <label for="nome-produto">Nome do Produto:</label>
+        <input type="text" id="nome-produto" name="nome-produto" required />
 
-                <label for="categoria-produto">Categoria:</label>
-                <input type="text" id="categoria-produto" name="categoria-produto" required>
+        <label for="categoria-produto">Categoria:</label>
+        <input
+          type="text"
+          id="categoria-produto"
+          name="categoria-produto"
+          required
+        />
 
-                <label for="preco-produto">Preço:</label>
-                <input type="number" id="preco-produto" name="preco-produto" step="0.01" required>
+        <label for="preco-produto">Preço:</label>
+        <input
+          type="number"
+          id="preco-produto"
+          name="preco-produto"
+          step="0.01"
+          required
+        />
 
-                <label for="quantidade-produto">Quantidade:</label>
-                <input type="number" id="quantidade-produto" name="quantidade-produto" required>
+        <label for="quantidade-produto">Quantidade:</label>
+        <input
+          type="number"
+          id="quantidade-produto"
+          name="quantidade-produto"
+          required
+        />
 
-                <div class="button-container">
-                    <button type="submit">Cadastrar Produto</button>
-                    <button type="button" class="delete" id="excluir-produto">Excluir Produto</button>
-            </form>
-        </section>
+        <button type="submit">Cadastrar Produto</button>
+      </form>
+    </section>
 
-       
-        <section id="atualizacao-estoque">
-            <h2>Atualização de Estoque</h2>
-            <form id="form-atualizacao-estoque">
-                <label for="nome-produto">Nome do Produto:</label>
-                <input type="text" id="nome-produto" name="nome-produto" required>
-        
-                <label for="tipo-movimentacao">Tipo de Movimentação:</label>
-                <select id="tipo-movimentacao" name="tipo-movimentacao" required>
-                    <option value="entrada">Entrada</option>
-                    <option value="saida">Saída</option>
-                </select>
-        
-                <label for="quantidade-movimentacao">Quantidade:</label>
-                <input type="number" id="quantidade-movimentacao" name="quantidade-movimentacao" required>
-        
-                <button type="submit">Atualizar Estoque</button>
-            </form>
-        </section>
-        
-        
-
-        
-        <section id="busca-produtos">
-            <h2>Buscar Produtos</h2>
-            <form action="/buscar-produto" method="GET">
-                <label for="busca-nome-produto">Nome do Produto:</label>
-                <input type="text" id="busca-nome-produto" name="busca-nome-produto">
-
-                <button type="submit">Buscar</button>
-            </form>
-
-           
-            <div id="resultados-busca">
-                <h3>Resultados:</h3>
-                
+    <section id="atualizacao-estoque">
+        <h2>Atualização de Estoque:</h2>
+    
+        <button id="abrir-modal-atualizacao">Atualizar Estoque</button>
+    
+        <div id="modal-atualizacao" class="modal" style="display:none;">
+            <div class="modal-conteudo">
+                <form id="form-atualizacao-estoque">
+                    <label for="id-produto">ID do Produto:</label>
+                    <input type="number" id="id-produto" name="id-produto" required>
+                    <button type="button" id="buscar-produto">Buscar Produto</button>
+    
+                    <div id="informacoes-produto" style="display:none;">
+                        <p id="detalhes-produto"></p>
+                        <label for="tipo-movimentacao">Tipo de Movimentação:</label>
+                        <select id="tipo-movimentacao" name="tipo-movimentacao" required>
+                            <option value="entrada">Entrada</option>
+                            <option value="saida">Saída</option>
+                        </select>
+    
+                        <label for="quantidade-movimentacao">Quantidade:</label>
+                        <input type="number" id="quantidade-movimentacao" name="quantidade-movimentacao" required>
+                        <button type="submit">Atualizar Estoque</button>
+                    </div>
+                </form>
+                <button id="fechar-modal">Fechar</button>
             </div>
-        </section>
+        </div>
+    </section>
+    
+    
+    
 
-        
-        <section id="relatorios">
-            <h2>Relatórios</h2>
-            <div id="relatorio-estoque-baixo">
-                <h3>Produtos com Estoque Baixo:</h3>
-               
-            </div>
+    <section id="busca-produtos">
+        <h2>Buscar Produtos:</h2>
+        <form id="form-busca-produtos">
+          <label for="busca-nome-produto">Nome do Produto:</label>
+          <input type="text" id="busca-nome-produto" required />
+          <button type="submit">Buscar</button>
+        </form>
+        <div id="resultados-busca"></div>
+      </section>
+      
 
-            <div id="relatorio-movimentacao-estoque">
-                <h3>Movimentação de Estoque:</h3>
-                
-            </div>
-        </section>
-    </main>
+      <section id="produtos-cadastrados">
+        <h2>Produtos Cadastrados:</h2>
+        <div id="lista-produtos">
+        </div>
+    </section>
+    
 
     <footer>
-        <p>Desenvolvido por S.L. da Silva Sousa Autopeças Ltda</p>
+      <p>&copy; 2024 Oficina Autopeças. Todos os direitos reservados.</p>
     </footer>
-    <script src="script.js"></script>
-</body>
-</html>
 
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
