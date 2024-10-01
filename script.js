@@ -1,61 +1,33 @@
 let produtos = [];
 
-async function carregarProdutos() {
-  try {
-    const response = await fetch("http://localhost:3000/produtos");
-    if (response.ok) {
-      produtos = await response.json();
-      produtos.forEach((produto) => {
-        produto.preco = parseFloat(produto.preco);
-      });
-      exibirProdutosCadastrados();
-    } else {
-      console.error("Erro ao carregar produtos");
-    }
-  } catch (error) {
-    console.error("Erro:", error);
-  }
-}
+function carregarProdutos() {
+  fetch("http://localhost:3000/produtos")
+    .then((response) => response.json())
+    .then((data) => {
+      const produtosDiv = document.getElementById("produtos-cadastrados");
+      produtosDiv.innerHTML = "<h3>Produtos Cadastrados:</h3>";
 
-function exibirProdutosCadastrados() {
-  const listaProdutosDiv = document.getElementById("lista-produtos");
-  listaProdutosDiv.innerHTML = "";
-
-  if (produtos.length > 0) {
-    produtos.forEach((produto) => {
-      const precoFormatado = produto.preco.toFixed(2);
-      listaProdutosDiv.innerHTML += `
-                <div>
-                    <p>${produto.nome} - Categoria: ${produto.categoria} - Preço: R$${precoFormatado} - Estoque: ${produto.quantidade} - ID: ${produto.id}</p>
-                    <button onclick="excluirProduto(${produto.id})" style="background-color: red; color: white; border: none; padding: 5px 10px; cursor: pointer;">Excluir</button>
-                </div>
-            `;
+      if (data.length > 0) {
+        data.forEach((produto) => {
+          const preco = parseFloat(produto.preco);
+          produtosDiv.innerHTML += `<p>${produto.nome_produto} - Categoria: ${
+            produto.categoria
+          } - Preço: R$${preco.toFixed(2)} - Estoque: ${
+            produto.quantidade
+          }</p>`;
+        });
+      } else {
+        produtosDiv.innerHTML += `<p>Nenhum produto cadastrado ainda.</p>`;
+      }
+    })
+    .catch((error) => {
+      alert(`Erro ao carregar produtos: ${error.message}`);
     });
-  } else {
-    listaProdutosDiv.innerHTML = `<p>Nenhum produto cadastrado.</p>`;
-  }
-}
-
-async function excluirProduto(id) {
-  try {
-    const response = await fetch(`http://localhost:3000/produtos/id/${id}`, {
-      method: "DELETE",
-    });
-    if (response.ok) {
-      alert("Produto excluído com sucesso!");
-      await carregarProdutos();
-    } else {
-      const error = await response.json();
-      alert(`Erro ao excluir produto: ${error.message}`);
-    }
-  } catch (error) {
-    alert(`Erro: ${error.message}`);
-  }
 }
 
 document
-  .getElementById("cadastro-produtos")
-  .addEventListener("submit", async function (e) {
+  .getElementById("form-cadastro-produto")
+  .addEventListener("submit", function (e) {
     e.preventDefault();
 
     const nome = document.getElementById("nome-produto").value;
@@ -65,141 +37,129 @@ document
       document.getElementById("quantidade-produto").value
     );
 
-    const produto = { nome, categoria, preco, quantidade };
-
-    try {
-      const response = await fetch("http://localhost:3000/produtos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(produto),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        alert(`Produto "${nome}" cadastrado com sucesso! ID: ${data.id}`);
+    fetch("http://localhost:3000/produtos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        nome_produto: nome,
+        categoria: categoria,
+        preco,
+        quantidade,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        alert(data.message);
         e.target.reset();
-        await carregarProdutos();
-      } else {
-        const error = await response.json();
-        alert(`Erro ao cadastrar o produto: ${error.message}`);
-      }
-    } catch (error) {
-      alert(`Erro: ${error.message}`);
-    }
+
+        carregarProdutos();
+      })
+      .catch((error) => {
+        alert(`Erro: ${error.message}`);
+      });
   });
 
-function buscarProdutoPorId(id) {
-  return produtos.find((prod) => prod.id === id);
-}
+document.addEventListener("DOMContentLoaded", function () {
+  carregarProdutos();
+});
+
+document
+  .getElementById("excluir-produto")
+  .addEventListener("click", function () {
+    const nomeProduto = prompt("Digite o nome do produto a ser excluído:");
+    if (nomeProduto) {
+      fetch(`http://localhost:3000/produtos/${nomeProduto}`, {
+        method: "DELETE",
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(
+              "Erro ao excluir o produto: " + response.statusText
+            );
+          }
+          return response.json();
+        })
+        .then((data) => {
+          alert(data.message);
+          carregarProdutos();
+        })
+        .catch((error) => {
+          alert(`Erro: ${error.message}`);
+        });
+    } else {
+      alert("Nenhum nome de produto foi fornecido.");
+    }
+  });
 
 document
   .getElementById("form-busca-produtos")
   .addEventListener("submit", function (e) {
     e.preventDefault();
 
-    const nomeProduto = document
-      .getElementById("busca-nome-produto")
-      .value.toLowerCase();
-    const resultadosDiv = document.getElementById("resultados-busca");
+    const nomeBusca = document.getElementById("busca-nome-produto").value;
 
-    const produtosEncontrados = produtos.filter((prod) =>
-      prod.nome.toLowerCase().includes(nomeProduto)
-    );
-
-    resultadosDiv.innerHTML = `<h3>Resultados da Busca:</h3>`;
-    if (produtosEncontrados.length > 0) {
-      produtosEncontrados.forEach((produto) => {
-        resultadosDiv.innerHTML += `
-                <div>
-                    <p>${produto.nome} - Categoria: ${
-          produto.categoria
-        } - Preço: R$${produto.preco.toFixed(2)} - Estoque: ${
-          produto.quantidade
-        } - ID: ${produto.id}</p>
-                </div>
-            `;
+    fetch(`http://localhost:3000/produtos?nome=${nomeBusca}`)
+      .then((response) => response.json())
+      .then((resultados) => {
+        const resultadosDiv = document.getElementById("resultados-busca");
+        resultadosDiv.innerHTML = `<h3>Resultados:</h3>`;
+        if (resultados.length > 0) {
+          resultados.forEach((produto) => {
+            const preco = parseFloat(produto.preco); // Converte para número
+            resultadosDiv.innerHTML += `<p>${
+              produto.nome_produto
+            } - Categoria: ${produto.categoria} - Preço: R$${preco.toFixed(
+              2
+            )} - Estoque: ${produto.quantidade}</p>`;
+          });
+        } else {
+          resultadosDiv.innerHTML += `<p>Nenhum produto encontrado.</p>`;
+        }
+      })
+      .catch((error) => {
+        alert(`Erro: ${error.message}`);
       });
-    } else {
-      resultadosDiv.innerHTML += `<p>Nenhum produto encontrado.</p>`;
-    }
   });
 
 document
-  .getElementById("abrir-modal-atualizacao")
-  .addEventListener("click", function () {
-    document.getElementById("modal-atualizacao").style.display = "block";
-  });
-
-document
-  .getElementById("buscar-produto")
-  .addEventListener("click", function () {
-    const idProduto = parseInt(document.getElementById("id-produto").value);
-    const produto = produtos.find((prod) => prod.id === idProduto);
-
-    const detalhesProduto = document.getElementById("detalhes-produto");
-    const informacoesProduto = document.getElementById("informacoes-produto");
-
-    if (produto) {
-      detalhesProduto.innerHTML = `Produto: ${produto.nome} - Estoque Atual: ${produto.quantidade}`;
-      informacoesProduto.style.display = "block";
-    } else {
-      alert("Produto não encontrado.");
-      informacoesProduto.style.display = "none";
-    }
-  });
-
-document
-  .getElementById("form-atualizacao-estoque")
-  .addEventListener("submit", async function (e) {
+  .getElementById("form-movimentacao-estoque")
+  .addEventListener("submit", function (e) {
     e.preventDefault();
 
-    const idProduto = parseInt(document.getElementById("id-produto").value);
-    const tipoMovimentacao = document.getElementById("tipo-movimentacao").value;
-    const quantidade = parseInt(
+    const nomeProduto = document.getElementById("nome-movimentacao").value;
+    const tipoMovimentacao = document.getElementById("tipo-movimentacao").value; // 'entrada' ou 'saida'
+    const quantidadeMovimentacao = parseInt(
       document.getElementById("quantidade-movimentacao").value
     );
-    const produto = buscarProdutoPorId(idProduto);
 
-    if (!produto) {
-      alert("Produto não encontrado. Atualização não realizada.");
+    if (isNaN(quantidadeMovimentacao) || quantidadeMovimentacao <= 0) {
+      alert("Por favor, insira uma quantidade válida.");
       return;
     }
 
-    const quantidadeMovimentacao =
-      tipoMovimentacao === "entrada" ? quantidade : -quantidade;
-
-    try {
-      const response = await fetch(
-        `http://localhost:3000/produtos/${idProduto}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ quantidade: quantidadeMovimentacao }),
+    fetch(`http://localhost:3000/produtos/${nomeProduto}/movimentacao`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ tipoMovimentacao, quantidadeMovimentacao }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            "Erro ao atualizar o estoque: " + response.statusText
+          );
         }
-      );
+        return response.json();
+      })
+      .then((data) => {
+        alert(data.message);
 
-      if (response.ok) {
-        const data = await response.json();
-        alert(
-          `Estoque atualizado com sucesso! Novo estoque: ${data.quantidade}`
-        );
-        document.getElementById("form-atualizacao-estoque").reset();
-        document.getElementById("informacoes-produto").style.display = "none";
-        document.getElementById("modal-atualizacao").style.display = "none";
-        await carregarProdutos();
-      } else {
-        const error = await response.json();
-        alert(`Erro ao atualizar o estoque: ${error.message}`);
-      }
-    } catch (error) {
-      alert(`Erro: ${error.message}`);
-    }
+        carregarProdutos();
+      })
+      .catch((error) => {
+        alert(`Erro: ${error.message}`);
+      });
   });
-
-document.addEventListener("click", function (event) {
-  if (event.target === document.getElementById("modal-atualizacao")) {
-    document.getElementById("modal-atualizacao").style.display = "none"; // Esconde o modal
-  }
-});
-
-window.onload = carregarProdutos;
